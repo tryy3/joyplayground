@@ -29,7 +29,6 @@ If you are running snippet store on a different port or a different host, you wi
 ## TODO
  * Get docker working
  * Maybe split snippet store and playground into different packages to make installation easier with go get?
- * Fix default snippet store address https://github.com/tryy3/joyplayground/blob/master/sandbox/playground.go#L24
  * Decide on v1 or v2 and remove version extension
  * https://github.com/tryy3/joyplayground/blob/master/sandbox/playground.go#L196 maybe edit the default package name?
  * https://github.com/tryy3/joyplayground/blob/master/sandbox/playground.go#L168 detect joy installation?

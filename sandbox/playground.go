@@ -20,8 +20,10 @@ import (
 	"time"
 )
 
-const maxRunTime = 2 * time.Second
-const snippetStoreHost = "http://localhost:4444"
+const maxRunTime = 2 * time.Second               // Amount of time to run before timeout when executing a command
+const snippetStoreHost = "http://localhost:8080" // Where snippet store is hosted
+
+// Default golang code template
 const hello = `package main
 
 import (
@@ -33,7 +35,9 @@ func main() {
 }
 `
 
-var source_dir = "."
+var source_dir = "." // Location of the html/static files
+
+// HTML Templates
 var indexv1Template *template.Template
 var indexv2Template *template.Template
 
@@ -186,7 +190,6 @@ func compileAndRun(req *Request) (*Response, error) {
 	}
 
 	pkg := strings.Replace(tmpDir, `\`, `\\`, -1)
-	// pkg = strings.Replace(tmpDir, "/", "\\/", -1)
 	regPkgName, err := regexp.Compile(`(../)+` + pkg[1:])
 	if err != nil {
 		return nil, fmt.Errorf("error compiling regex: %v", err)
