@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/playground.css">
+</head>
+<body>
+    <div id="banner">
+        <div id="head">The Joy playground V2</div>
+        <div id="controls">
+            <input type="button" value="Run" id="run">
+            <input type="button" value="Format" id="fmt">
+            <div id="importsBox">
+                <label title="Rewrite imports on Format">
+                    <input type="checkbox" id="imports">
+                    Imports
+                </label>
+            </div>
+            <input type="button" value="Share" id="share">
+            <input type="text" id="shareURL" style="display: none;">
+        </div>
+    </div>
+
+    <div id="leftWrap">
+        <textarea itemprop="description" class="code" id="code" name="code" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off">{{printf "%s" .Snippet}}</textarea>
+    </div>
+
+    <div id="rightWrap">
+        <pre itemprop="description" class="code" id="jscode" name="jscode" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off"></pre>
+    </div>
+
+    <div id="output">
+        <pre></pre>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="/static/jquery-linedtextarea.js"></script>
+    <script src="/static/playground.js"></script>
+
+    <script>
+        playground({
+            'codeEl':       '#code',
+            'jsEl':         '#jscode',
+            'outputEl':     '#output',
+            'runEl':        '#run, #embedRun',
+            'fmtEl':        '#fmt',
+            'fmtImportEl':  '#imports',
+            
+            'shareEl':      '#share',
+            'shareURLEl':   '#shareURL',
+            
+            'enableHistory': true,
+            'enableShortcuts': true
+        });
+
+        $('#code').linedtextarea();
+        $('#code').attr('wrap', 'off');
+
+        $('#jscode').linedtextarea();
+        $('#jscode').attr('wrap', 'off');
+
+        if (window.trackEvent) {
+            $('#run').click(function() {
+                window.trackEvent('playground', 'click', 'run-button');
+            });
+            $('#share').click(function() {
+                window.trackEvent('playground', 'click', 'share-button');
+            });
+        }
+    </script>
+</body>
+</html>
