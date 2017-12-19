@@ -108,7 +108,7 @@ func fmtHandler(w http.ResponseWriter, r *http.Request) {
 
 func pHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[2:]
-	resp, err := http.Get(snippetStoreHost + "/p/" + id)
+	resp, err := http.Get(*snippetStoreHost + "/p/" + id)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error getting response from snippet store: %v", err), http.StatusBadRequest)
 		return
@@ -147,7 +147,7 @@ func shareHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := http.Post(snippetStoreHost+"/share", "application/json", bytes.NewBuffer(req))
+	resp, err := http.Post(*snippetStoreHost+"/share", "application/json", bytes.NewBuffer(req))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error getting response from snippet store: %v", err), http.StatusBadRequest)
 		return
