@@ -26,9 +26,9 @@ import (
 
 var tmpDirFlag = flag.String("tmp-dir", "", "Path for temp folder, if not set it will use the OS temp folder.")
 var joyExecutableFlag = flag.String("joy-exe", "", "Path for joy exectuable, if not set it will simply use the 'joy' command.")
+var snippetStoreHost = flag.String("snippet-url", "http://localhost:5555", "URL to the snippet store.")
 
-const maxRunTime = 2 * time.Second               // Amount of time to run before timeout when executing a command
-const snippetStoreHost = "http://localhost:5555" // Where snippet store is hosted
+const maxRunTime = 2 * time.Second // Amount of time to run before timeout when executing a command
 
 // Default golang code template
 const hello = `package main
