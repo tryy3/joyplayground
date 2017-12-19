@@ -14,19 +14,6 @@ a {
 	color: #009;
 }
 
-#wrap {
-	padding: 5px;
-	margin: 0;
-
-	position: absolute;
-	top: 50px;
-	bottom: 25%;
-	left: 0;
-	right: 0;
-
-	background: #FFD;
-}
-
 #leftWrap {
 	padding: 5px;
 	margin: 0;
@@ -38,7 +25,6 @@ a {
 	left: 0;
 
 	background: #FFD;
-	border-right: 1px solid black;
 }
 
 #rightWrap {
@@ -52,7 +38,15 @@ a {
 	right: 0;
 
 	background: #FFD;
-	border-left: 1px solid black;
+}
+
+#resizableVertical {
+	position: absolute;
+	width: 20px;
+	background: black;
+	top: 50px;
+	bottom: 25%;
+	cursor: col-resize;
 }
 
 .code, #output, pre, .lines {
@@ -74,6 +68,7 @@ a {
 	resize: none;
 	wrap: off;
 	float: right;
+	overflow-y: scroll;
 }
 
 #output {
@@ -160,6 +155,9 @@ input[type=button],
 	color: black;
 	height: 23px;
 }
+#embedLabel {
+	font-family: sans-serif;
+}
 
 .lines {
 	float: left;
@@ -179,4 +177,20 @@ input[type=button],
 
 .exit {
 	color: lightgray;
+}
+.embedded #banner {
+	display: none;
+}
+.embedded #leftWrap, .embedded #rightWrap {
+	top: 0;
+}
+#embedRun {
+	display: none;
+}
+.embedded #embedRun {
+	display: block;
+	position: absolute;
+	z-index: 1;
+	top: 10px;
+	right: 10px;
 }

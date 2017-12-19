@@ -368,13 +368,12 @@ function PlaygroundOutput(el, fileEl) {
 
         var pushedEmpty = (window.location.pathname == "/");
         function inputChanged() {
-            version = window.location.pathname.substr(0, 3)
             if (pushedEmpty) {
                 return;
             }
             pushedEmpty = true;
             $(opts.shareURLEl).hide();
-            window.history.pushState(null, "", version + "/");
+            window.history.pushState(null, "", "/");
         }
         function popState(e) {
             if (e === null) {
@@ -445,16 +444,15 @@ function PlaygroundOutput(el, fileEl) {
                 data: sharingData,
                 type: "POST",
                 complete: function(xhr) {
-                    version = window.location.pathname.substr(0, 3)
                     sharing = false;
                     if (xhr.status != 200) {
                         alert("Server error; try again.");
                         return;
                     }
                     if (opts.shareRedirect) {
-                        window.location = version + opts.shareRedirect + xhr.responseText;
+                        window.location = opts.shareRedirect + xhr.responseText;
                     }
-                    var path = version + "/p/" + xhr.responseText;
+                    var path = "/p/" + xhr.responseText;
                     var url = origin(window.location) + path;
 
                     for (var i = 0; i < shareCallbacks.length; i++) {

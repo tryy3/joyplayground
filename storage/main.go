@@ -10,6 +10,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -68,6 +69,8 @@ func pHandler(w http.ResponseWriter, req *http.Request) {
 func shareHandler(w http.ResponseWriter, req *http.Request) {
 	// w.Header().Set("Access-Control-Allow-Origin", *allowOriginFlag)
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type") // Needed for Safari.
+
+	fmt.Printf("%#v\n", req.Method)
 
 	if req.Method != "POST" {
 		w.Header().Set("Allow", "POST")

@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"flag"
 	"fmt"
+	"go/format"
 	"go/parser"
 	"go/token"
 	"io"
@@ -15,13 +17,17 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strings"
+	// "strings"
 	"text/template"
 	"time"
+
+	"golang.org/x/tools/imports"
 )
 
+var tmpDirFlag = flag.String("tmp-dir", "", "Path for temp folder, if not set it will use the OS temp folder.")
+
 const maxRunTime = 2 * time.Second               // Amount of time to run before timeout when executing a command
-const snippetStoreHost = "http://localhost:8080" // Where snippet store is hosted
+const snippetStoreHost = "http://localhost:5555" // Where snippet store is hosted
 
 // Default golang code template
 const hello = `package main
@@ -35,11 +41,10 @@ func main() {
 }
 `
 
-var source_dir = "." // Location of the html/static files
+var sourceDir = "." // Location of the html/static files
 
 // HTML Templates
-var indexv1Template *template.Template
-var indexv2Template *template.Template
+var indexTemplate *template.Template
 
 type indexData struct {
 	Snippet string
@@ -54,29 +59,54 @@ type Response struct {
 	Events []Event
 }
 
+type fmtResponse struct {
+	Body  string
+	Error string
+}
+
 func main() {
+	flag.Parse()
 	if len(os.Args) > 1 && os.Args[1] == "test" {
 		// test()
 		return
 	}
 	if source, ok := os.LookupEnv("SOURCE_DIR"); ok {
-		source_dir = source
+		sourceDir = source
 	}
 
-	indexv1Template = template.Must(template.ParseFiles(source_dir + "/indexv1.html"))
-	indexv2Template = template.Must(template.ParseFiles(source_dir + "/indexv2.html"))
+	indexTemplate = template.Must(template.ParseFiles(sourceDir + "/index.html"))
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(source_dir+"/static"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(sourceDir+"/static"))))
 	http.HandleFunc("/compile", compileHandler)
 	http.HandleFunc("/share", shareHandler)
-	http.HandleFunc("/v1/p/", pHandler)
-	http.HandleFunc("/v2/p/", pHandler)
+	http.HandleFunc("/fmt", fmtHandler)
+	http.HandleFunc("/p/", pHandler)
 	http.HandleFunc("/", indexHandler)
-	log.Fatal(http.ListenAndServe(":5555", nil))
+	log.Fatal(http.ListenAndServe(":80", nil))
+}
+
+func fmtHandler(w http.ResponseWriter, r *http.Request) {
+	var (
+		in  = []byte(r.FormValue("body"))
+		out []byte
+		err error
+	)
+	if r.FormValue("imports") != "" {
+		out, err = imports.Process("prog.go", in, nil)
+	} else {
+		out, err = format.Source(in)
+	}
+	var resp fmtResponse
+	if err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Body = string(out)
+	}
+	json.NewEncoder(w).Encode(resp)
 }
 
 func pHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[6:]
+	id := r.URL.Path[2:]
 	resp, err := http.Get(snippetStoreHost + "/p/" + id)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error getting response from snippet store: %v", err), http.StatusBadRequest)
@@ -89,12 +119,7 @@ func pHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	version := r.URL.Path[1:3]
-	if version == "v1" {
-		indexv1Template.Execute(w, &indexData{Snippet: string(body)})
-	} else {
-		indexv2Template.Execute(w, &indexData{Snippet: string(body)})
-	}
+	indexTemplate.Execute(w, &indexData{Snippet: string(body)})
 }
 
 func compileHandler(w http.ResponseWriter, r *http.Request) {
@@ -142,20 +167,15 @@ func shareHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	version := r.URL.Path[1:3]
-	if version == "v1" {
-		indexv1Template.Execute(w, &indexData{Snippet: hello})
-	} else {
-		indexv2Template.Execute(w, &indexData{Snippet: hello})
-	}
+	indexTemplate.Execute(w, &indexData{Snippet: hello})
 }
 
 func compileAndRun(req *Request) (*Response, error) {
-	tmpDir, err := ioutil.TempDir("", "sandbox")
+	tmpDir, err := ioutil.TempDir(*tmpDirFlag, "sandbox")
 	if err != nil {
 		return nil, fmt.Errorf("error creating temp directory: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	// defer os.RemoveAll(tmpDir)
 
 	in := filepath.Join(tmpDir, "main.go")
 	if err := ioutil.WriteFile(in, []byte(req.Body), 0400); err != nil {
@@ -169,8 +189,14 @@ func compileAndRun(req *Request) (*Response, error) {
 		return &Response{Errors: "package name must be main"}, nil
 	}
 
-	joyCmd := exec.Command("/root/Go/bin/joy", in)
-	joyCmd.Env = []string{"GOOS=nacl", "GOARCH=amd64p32", "GOPATH=" + os.Getenv("GOPATH"), "PATH=" + os.Getenv("PATH")}
+	joyCmd := exec.Command("D:\\Codes\\Golang\\bin\\joy.exe", in)
+	joyCmd.Env = []string{
+		"GOPATH=" + os.Getenv("GOPATH"),
+		"PATH=" + os.Getenv("PATH"),
+		"HOMEDRIVE=" + os.Getenv("HOMEDRIVE"),     // Windows
+		"HOMEPATH=" + os.Getenv("HOMEPATH"),       // Windows
+		"USERPROFILE=" + os.Getenv("USERPROFILE"), // Windows
+	}
 
 	joyRec := new(Recorder)
 	joyCmd.Stdout = joyRec.File()
@@ -189,8 +215,8 @@ func compileAndRun(req *Request) (*Response, error) {
 		return nil, fmt.Errorf("error decoding events: %v", err)
 	}
 
-	pkg := strings.Replace(tmpDir, `\`, `\\`, -1)
-	regPkgName, err := regexp.Compile(`(../)+` + pkg[1:])
+	// pkg := strings.Replace(tmpDir, `\`, `\\`, -1)
+	regPkgName, err := regexp.Compile(`(../)+` + tmpDir)
 	if err != nil {
 		return nil, fmt.Errorf("error compiling regex: %v", err)
 	}
