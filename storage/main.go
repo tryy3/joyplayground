@@ -70,8 +70,6 @@ func shareHandler(w http.ResponseWriter, req *http.Request) {
 	// w.Header().Set("Access-Control-Allow-Origin", *allowOriginFlag)
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type") // Needed for Safari.
 
-	fmt.Printf("%#v\n", req.Method)
-
 	if req.Method != "POST" {
 		w.Header().Set("Allow", "POST")
 		http.Error(w, "Method should be POST.", http.StatusMethodNotAllowed)
