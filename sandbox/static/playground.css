@@ -8,6 +8,8 @@ body {
 	margin: 0;
 	width: 100%;
 	height: 100%;
+
+	background: #ADADAD;
 }
 
 a {
@@ -15,7 +17,7 @@ a {
 }
 
 #leftWrap {
-	padding: 5px;
+	padding: 0;
 	margin: 0;
 
 	position: absolute;
@@ -24,11 +26,13 @@ a {
 	bottom: 25%;
 	left: 0;
 
-	background: #FFD;
+	background: #737373;
+	margin: 10px;
+	border-radius: 5px;
 }
 
 #rightWrap {
-	padding: 5px;
+	padding: 0;
 	margin: 0;
 
 	position: absolute;
@@ -37,19 +41,38 @@ a {
 	bottom: 25%;
 	right: 0;
 
-	background: #FFD;
+	background: #737373;
+	margin: 10px;
+	border-radius: 5px;
 }
 
 #resizableVertical {
 	position: absolute;
 	width: 20px;
-	background: black;
+	background: #818181;
 	top: 50px;
 	bottom: 25%;
 	cursor: col-resize;
+	border-left: 1px solid rgba(255,255,255,0.1);
+	border-right: 1px solid rgba(0,0,0,0.4);
+	margin-top: 5px;
+	margin-bottom: 5px;
+	z-index: 100;
 }
 
-.code, #output, pre, .lines {
+.editorTitle {
+	background: #414648;
+	color: #DEDDDD;
+	padding: 5px;
+	border-radius: 5px 5px 0 0;
+}
+
+.linedtextarea {
+	padding-right: 5px;
+	padding-top: 5px;
+}
+
+.code, #console, pre, .lines {
 	/* The default monospace font on OS X is ugly, so specify Menlo
 	 * instead. On other systems the default monospace font will be used. */
 	font-family: Menlo, monospace;
@@ -57,7 +80,7 @@ a {
 }
 
 .code {
-	color: black;
+	color: white;
 	background: inherit;
 
 	width: 100%;
@@ -71,24 +94,26 @@ a {
 	overflow-y: scroll;
 }
 
-#output {
+#console {
 	position: absolute;
 	top: 75%;
 	bottom: 0;
 	left: 0;
 	right: 0;
-	padding: 8px;
+	margin: 0 10px 10px 10px;
+	background: #DEDDDD;
+	border-radius: 5px;
 }
 
-#output .system, #output .loading {
+#console .system, #console .loading {
 	color: #999;
 }
 
-#output .stderr, #output .error {
+#console .stderr, #console .error {
 	color: #900;
 }
 
-#output pre {
+#console pre {
 	margin: 0;
 }
 
@@ -98,7 +123,8 @@ a {
 	right: 0;
 	top: 0;
 	height: 50px;
-	background-color: #E0EBF5;
+	background-color: #323333;
+	color: #DEDDDD;
 }
 
 #head {
@@ -120,7 +146,7 @@ a {
 }
 
 input[type=button],
-#importsBox {
+#importsBox, #embedBox {
 	height: 30px;
 	border: 1px solid #375EAB;
 	font-size: 16px;
@@ -132,14 +158,14 @@ input[type=button],
 	border-radius: 5px;
 }
 
-#importsBox {
+#importsBox, #embedBox {
 	position: relative;
 	display: inline;
 	padding: 5px 0;
 	margin-right: 5px;
 }
 
-#importsBox input {
+#importsBox input, #embedBox input {
 	position: relative;
 	top: -2px;
 	left: 1px;
@@ -167,7 +193,7 @@ input[type=button],
 
 .lines div {
 	padding-right: 5px;
-	color: lightgray;
+	color: #b3b3b3;
 }
 
 .lineerror {

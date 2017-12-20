@@ -17,7 +17,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	// "strings"
 	"text/template"
 	"time"
 
@@ -110,12 +109,14 @@ func pHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[2:]
 	resp, err := http.Get(*snippetStoreHost + "/p/" + id)
 	if err != nil {
+		log.Printf("error getting response from snippet store: %v\n", err)
 		http.Error(w, fmt.Sprintf("error getting response from snippet store: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("error reading request: %v\n", err)
 		http.Error(w, fmt.Sprintf("error reading request: %v", err), http.StatusBadRequest)
 		return
 	}
@@ -126,15 +127,18 @@ func pHandler(w http.ResponseWriter, r *http.Request) {
 func compileHandler(w http.ResponseWriter, r *http.Request) {
 	var req Request
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("error decoding request: %v\n", err)
 		http.Error(w, fmt.Sprintf("error decoding request: %v", err), http.StatusBadRequest)
 		return
 	}
 	resp, err := compileAndRun(&req)
 	if err != nil {
+		log.Printf("Compile error: %v\n", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Printf("error encoding response: %v\n", err)
 		http.Error(w, fmt.Sprintf("error encoding response: %v", err), http.StatusInternalServerError)
 		return
 	}
@@ -143,25 +147,28 @@ func compileHandler(w http.ResponseWriter, r *http.Request) {
 func shareHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		log.Printf("error reading request: %v\n", err)
 		http.Error(w, fmt.Sprintf("error reading request: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	resp, err := http.Post(*snippetStoreHost+"/share", "application/json", bytes.NewBuffer(req))
 	if err != nil {
+		log.Printf("error getting response from snippet store: %v\n", err)
 		http.Error(w, fmt.Sprintf("error getting response from snippet store: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	id, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		log.Printf("error reading request: %v\n", err)
 		http.Error(w, fmt.Sprintf("error reading request: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	_, err = io.WriteString(w, string(id))
 	if err != nil {
-		log.Println(err)
+		log.Printf("Server error: %v\n", err)
 		http.Error(w, "Server error.", http.StatusInternalServerError)
 		return
 	}
@@ -221,16 +228,16 @@ func compileAndRun(req *Request) (*Response, error) {
 		return nil, fmt.Errorf("error decoding events: %v", err)
 	}
 
-	// pkg := strings.Replace(tmpDir, `\`, `\\`, -1)
-	regPkgName, err := regexp.Compile(`(../)+` + tmpDir)
+	regPkgName, err := regexp.Compile(`pkg\[(.+)\]`)
 	if err != nil {
 		return nil, fmt.Errorf("error compiling regex: %v", err)
 	}
+	fmt.Printf("%+v\n", regPkgName)
 
 	// rewrite any mentions of the tmpdir and replace with "playground"
 	// TODO: Maybe switch out "playground" with something else?
 	for i := 0; i < len(joyEvents); i++ {
-		joyEvents[i].Message = regPkgName.ReplaceAllString(joyEvents[i].Message, "playground")
+		joyEvents[i].Message = regPkgName.ReplaceAllString(joyEvents[i].Message, "pkg[\"playground\"]")
 	}
 
 	return &Response{Events: joyEvents}, nil

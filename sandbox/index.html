@@ -20,25 +20,38 @@
                     Imports
                 </label>
             </div>
+            <div id="embedBox">
+                <label id="embedLabel" title="Embed the playground">
+                    <input type="checkbox" id="embed">
+                    Embed
+                </label>
+            </div>
             <input type="button" value="Share" id="share">
             <input type="text" id="shareURL" style="display: none;">
-            <label id="embedLabel">
-                <input type="checkbox" id="embed">
-                embed
-            </label>
         </div>
     </div>
 
     <div id="leftWrap">
+        <div class="editorTitle">
+            Golang
+        </div>
         <textarea itemprop="description" class="code" id="code" name="code" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off">{{printf "%s" .Snippet}}</textarea>
     </div>
     <div id="resizableVertical" title="Drag to resize."></div>
     <div id="rightWrap">
+        <div class="editorTitle">
+            Javascript
+        </div>
         <pre itemprop="description" class="code" id="jscode" name="jscode" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off"></pre>
     </div>
 
-    <div id="output">
-        <pre></pre>
+    <div id="console">
+        <div class="editorTitle">
+            Console Output
+        </div>
+        <div id="output">
+            <pre></pre>
+        </div>
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
@@ -82,10 +95,16 @@
         var lastPos = null;
 
         function resize() {
-            var resizeWidth = $("#resizableVertical").width()
-            $("#leftWrap").width(($("body").width() / 2 - resizeWidth - 5 - offset) + "px")
-            $("#rightWrap").width(($("body").width() / 2 - resizeWidth - 5 + offset) + "px")
-            $("#resizableVertical").css("left", ($("body").width() / 2 - 5 - offset) + "px")
+            var resizeWidth = $("#resizableVertical").width() - 3
+            $("#leftWrap").width(($("body").width() / 2 - resizeWidth - 10 - offset) + "px")
+            $("#rightWrap").width(($("body").width() / 2 - resizeWidth - 10 + offset) + "px")
+            $("#resizableVertical").css("left", ($("body").width() / 2 - 10 - offset) + "px")
+
+            $(".linedtextarea").each(function() {
+                var paddingBottom = 15
+                var title = $(this).siblings(".editorTitle").outerHeight()
+                $(this).height(($(this).parent().height() - title - paddingBottom) + "px")
+            })
         }
 
         $("#resizableVertical")

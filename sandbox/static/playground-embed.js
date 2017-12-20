@@ -19,7 +19,7 @@ function playgroundEmbed(opts) {
     function inIFrame(){
       return window.self !== window.top;
     }
-    embedLabel.hide();
+    // embedLabel.hide();
     if (inIFrame()) {
       $("body").addClass("embedded");
       return;
