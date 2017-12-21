@@ -405,19 +405,20 @@ function PlaygroundOutput(el, fileEl) {
             loading();
             fileOut = undefined
             if (typeof opts.jsEl !== 'undefined') fileOut = $(opts.jsEl)
-            running = transport.Run(body(), highlightOutput(PlaygroundOutput(output[0], fileOut)));
+            running = transport.Run(body(), highlightOutput(PlaygroundOutput(output[0], fileOut)), opts);
         }
 
         function fmt() {
             loading();
             var data = {"body": body()};
             if ($(opts.fmtImportEl).is(":checked")) {
-                data["imports"] = "true";
+                data["imports"] = true;
             }
             $.ajax(opts.API + "/fmt", {
-                data: data,
+                data: JSON.stringify(data),
                 type: "POST",
                 dataType: "json",
+                contentType: 'application/json',
                 success: function(data) {
                     if (data.Error) {
                         setError(data.Error);
@@ -439,7 +440,7 @@ function PlaygroundOutput(el, fileEl) {
             sharing = true;
 
             var sharingData = body();
-            $.ajax(API + "/share", {
+            $.ajax(opts.API + "/share", {
                 processData: false,
                 data: sharingData,
                 type: "POST",

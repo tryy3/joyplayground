@@ -36,5 +36,5 @@ func fmtHandler(r Request) (interface{}, error) {
 		log.Printf("error encoding response: %v\n", err)
 		return nil, fmt.Errorf("error encoding response: %v", err)
 	}
-	return Response{StatusCode: 200, Body: string(output)}, nil
+	return successResponse(string(output)), nil
 }

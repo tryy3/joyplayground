@@ -48,7 +48,7 @@ func compileHandler(r Request) (interface{}, error) {
 		log.Printf("error encoding response: %v\n", err)
 		return nil, fmt.Errorf("error encoding response: %v", err)
 	}
-	return Response{StatusCode: 200, Body: string(out)}, nil
+	return successResponse(string(out)), nil
 }
 
 func compileAndRun(req *BodyRequest) (*ResponseEvents, error) {

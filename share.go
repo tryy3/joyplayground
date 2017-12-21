@@ -23,7 +23,7 @@ func shareHandler(r Request) (interface{}, error) {
 		return nil, errors.New("Server error.")
 	}
 
-	return &Response{StatusCode: 200, Body: id}, nil
+	return successResponse(id), nil
 }
 
 func pHandler(r Request) (interface{}, error) {
@@ -35,9 +35,9 @@ func pHandler(r Request) (interface{}, error) {
 	}
 
 	if snippet, err := getSnippetFromS3Store(id); err == nil { // Check if we have the snippet locally first.
-		return &Response{StatusCode: 200, Body: snippet}, nil
+		return successResponse(snippet), nil
 	} else if snippet, err = getSnippetFromGoPlayground(id); err == nil { // If not found locally, try the Go Playground.
-		return &Response{StatusCode: 200, Body: snippet}, nil
+		return successResponse(snippet), nil
 	}
 	log.Printf("error retrieving the snippet: %v", err)
 	return nil, err

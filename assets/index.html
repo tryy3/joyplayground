@@ -35,7 +35,15 @@
         <div class="editorTitle">
             Golang
         </div>
-        <textarea itemprop="description" class="code" id="code" name="code" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off">{{printf "%s" .Snippet}}</textarea>
+        <textarea itemprop="description" class="code" id="code" name="code" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off">package main 
+ 
+import ( 
+    "fmt" 
+) 
+    
+func main() { 
+    fmt.Println("Hello, playground") 
+}</textarea>
     </div>
     <div id="resizableVertical" title="Drag to resize."></div>
     <div id="rightWrap">
@@ -74,7 +82,7 @@
             'enableHistory': true,
             'enableShortcuts': true,
 
-            'API': ''
+            'API': 'https://tzquj4eard.execute-api.us-east-1.amazonaws.com/joyplayground'
         });
         playgroundEmbed({
             'codeEl':       '#code',
@@ -85,7 +93,7 @@
             'embedLabelEl': '#embedLabel',
             'embedHTMLEl':  '#shareURL',
 
-            'API': ''
+            'API': 'https://tzquj4eard.execute-api.us-east-1.amazonaws.com/joyplayground'
         });
 
         $('#code').linedtextarea();

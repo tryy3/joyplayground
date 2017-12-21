@@ -11,8 +11,9 @@ import (
 )
 
 type Response struct {
-	StatusCode int    `json:"statusCode"`
-	Body       string `json:"body"`
+	StatusCode int               `json:"statusCode"`
+	Body       string            `json:"body"`
+	Headers    map[string]string `json:"headers"`
 }
 
 type Request struct {
@@ -37,6 +38,16 @@ type fmtRequest struct {
 type fmtResponse struct {
 	Body  string
 	Error string
+}
+
+func successResponse(msg string) Response {
+	return Response{
+		StatusCode: 200,
+		Body:       msg,
+		Headers: map[string]string{
+			"Access-Control-Allow-Origin": "*",
+		},
+	}
 }
 
 func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
@@ -68,7 +79,7 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		if strings.Contains(req.Path, "/p") {
 			return pHandler(req)
 		}
-		return Response{StatusCode: 200, Body: "Hello Worldsss"}, nil
+		return successResponse("Hello Worldsss"), nil
 	}
 
 }
