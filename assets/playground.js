@@ -87,7 +87,7 @@ function HTTPTransport() {
             seq++;
             var cur = seq;
             var playing;
-            $.ajax('/compile', {
+            $.ajax(options.API + '/compile', {
                 type: 'POST',
                 data: JSON.stringify({'version': 2, 'body': body}),
                 dataType: 'json',
@@ -414,7 +414,7 @@ function PlaygroundOutput(el, fileEl) {
             if ($(opts.fmtImportEl).is(":checked")) {
                 data["imports"] = "true";
             }
-            $.ajax("/fmt", {
+            $.ajax(opts.API + "/fmt", {
                 data: data,
                 type: "POST",
                 dataType: "json",
@@ -439,7 +439,7 @@ function PlaygroundOutput(el, fileEl) {
             sharing = true;
 
             var sharingData = body();
-            $.ajax("/share", {
+            $.ajax(API + "/share", {
                 processData: false,
                 data: sharingData,
                 type: "POST",
@@ -488,7 +488,7 @@ function PlaygroundOutput(el, fileEl) {
         if (opts.toysEl !== null) {
             $(opts.toysEl).bind('change', function() {
                 var toy = $(this).val();
-                $.ajax("/doc/play/"+toy, {
+                $.ajax(opts.API + "/doc/play/"+toy, {
                     processData: false,
                     type: "GET",
                     complete: function(xhr) {
