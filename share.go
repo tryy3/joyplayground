@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -14,36 +13,44 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 )
 
+// shareHandler handles all of the requests when sharing golang code
 func shareHandler(r Request) (interface{}, error) {
 	id, err := storeSnippet([]byte(r.Body))
 	if err != nil {
 		log.Printf("couldn't store snippet: %v", err)
-		return nil, errors.New("Server error.")
+		return errorResponse("Internal error", 500), nil
 	}
 
 	return successResponse(id), nil
 }
 
+// pHandler handles all of the requests when someone tries to retrieve golang code from an ID
 func pHandler(r Request) (interface{}, error) {
-	id := r.Path[len("/p/"):]
+	// get the ID from path
+	id := r.Path[strings.Index(r.Path, "p/")+2:]
 	err := validateID(id)
 	if err != nil {
 		log.Println("Unexpected id format.")
-		return nil, errors.New("Unexpected id format.")
+		return errorResponse("Unexpected if format.", 400), nil
 	}
 
-	if snippet, err := getSnippetFromS3Store(id); err == nil { // Check if we have the snippet locally first.
+	// Support for multiple snippet systems
+	if snippet, err := getSnippetFromS3Store(id); err == nil { // Check if we have the snippet on s3 first.
+		return successResponse(snippet), nil
+	} else if snippet, err = getSnippetFromLocalStore(id); err == nil { // Check if we have the snippet locally.
 		return successResponse(snippet), nil
 	} else if snippet, err = getSnippetFromGoPlayground(id); err == nil { // If not found locally, try the Go Playground.
 		return successResponse(snippet), nil
 	}
 	log.Printf("error retrieving the snippet: %v", err)
-	return nil, err
+	return errorResponse(fmt.Sprintf("error retrieving the snippet: %v", err), 400), nil
 }
 
-// storeSnippet stores snippet in local storage.
+// storeSnippet stores snippet in s3.
 // It returns the id assigned to the snippet.
 func storeSnippet(body []byte) (id string, err error) {
 	id = snippetBodyToID(body)
@@ -111,6 +118,17 @@ func getSnippetFromS3Store(id string) (string, error) {
 		return "", fmt.Errorf("error reading s3 object: %v", err)
 	}
 	return string(snippet), err
+}
+
+// getSnippetFromLocalStore tries to get the snippet with given id from local store.
+func getSnippetFromLocalStore(id string) (string, error) {
+	tmpDir := os.Getenv("LOCAL_STORE")
+	if tmpDir == "" {
+		tmpDir = os.TempDir()
+	}
+
+	data, err := ioutil.ReadFile(path.Join(tmpDir, id))
+	return string(data), err
 }
 
 const userAgent = "gopherjs.org/play/ playground snippet fetcher"

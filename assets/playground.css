@@ -9,7 +9,7 @@ body {
 	width: 100%;
 	height: 100%;
 
-	background: #ADADAD;
+	background: #fff;
 }
 
 a {
@@ -26,7 +26,7 @@ a {
 	bottom: 25%;
 	left: 0;
 
-	background: #737373;
+	background: #c7c7c6;
 	margin: 10px;
 	border-radius: 5px;
 }
@@ -41,7 +41,7 @@ a {
 	bottom: 25%;
 	right: 0;
 
-	background: #737373;
+	background: #c7c7c6;
 	margin: 10px;
 	border-radius: 5px;
 }
@@ -61,8 +61,8 @@ a {
 }
 
 .editorTitle {
-	background: #414648;
-	color: #DEDDDD;
+	background: #4e4d44;
+	color: #d8d5d5;
 	padding: 5px;
 	border-radius: 5px 5px 0 0;
 }
@@ -80,7 +80,7 @@ a {
 }
 
 .code {
-	color: white;
+	color: #171515;
 	background: inherit;
 
 	width: 100%;
@@ -123,8 +123,8 @@ a {
 	right: 0;
 	top: 0;
 	height: 50px;
-	background-color: #323333;
-	color: #DEDDDD;
+	background-color: #749090;
+	color: #040303;
 }
 
 #head {
@@ -148,11 +148,11 @@ a {
 input[type=button],
 #importsBox, #embedBox {
 	height: 30px;
-	border: 1px solid #375EAB;
+	border: 1px solid #4668a9;
 	font-size: 16px;
 	font-family: sans-serif;
-	background: #375EAB;
-	color: white;
+	background: #5b7dbd;
+	color: #fff;
 	position: static;
 	top: 1px;
 	border-radius: 5px;
@@ -193,7 +193,7 @@ input[type=button],
 
 .lines div {
 	padding-right: 5px;
-	color: #b3b3b3;
+	color: #888686;
 }
 
 .lineerror {

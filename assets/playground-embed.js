@@ -30,7 +30,7 @@ function playgroundEmbed(opts) {
     }
   
     function inputChanged() {
-      embedLabel.hide();
+      //embedLabel.hide();
     }
   
     if (window.history && window.history.pushState && window.addEventListener) {

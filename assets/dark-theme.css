@@ -1,0 +1,78 @@
+
+
+/* When dark mode is enabled */
+body.dark {
+	color: black;
+	background: #ADADAD;
+}
+
+body.dark #leftWrap {
+	background: #737373;
+}
+
+body.dark #rightWrap {
+	background: #737373;
+}
+
+body.dark #resizableVertical {
+	background: #818181;
+	border-left: 1px solid rgba(255,255,255,0.1);
+	border-right: 1px solid rgba(0,0,0,0.4);
+}
+
+body.dark .editorTitle {
+	background: #414648;
+	color: #DEDDDD;
+}
+
+body.dark .code {
+	color: white;
+	background: inherit;
+}
+
+body.dark #console {
+	background: #DEDDDD;
+}
+
+body.dark #console .system,
+body.dark #console .loading{
+	color: #999;
+}
+
+body.dark #console .stderr,
+body.dark #console .error {
+	color: #900;
+}
+
+body.dark #banner {
+	background-color: #323333;
+	color: #DEDDDD;
+}
+
+body.dark input[type=button],
+body.dark #importsBox,
+body.dark #embedBox {
+	border: 1px solid #375EAB;
+	background: #375EAB;
+	color: white;
+}
+
+body.dark #shareURL {
+	border: 1px solid #ccc;
+	background: #eee;
+	color: black;
+}
+
+body.dark .lines div {
+	color: #b3b3b3;
+}
+
+body.dark .lineerror {
+	color: red;
+	background: #FDD;
+	
+}
+
+body.dark .exit {
+	color: lightgray;
+}

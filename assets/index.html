@@ -6,11 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <link rel="stylesheet" href="/playground.css">
+    <link rel="stylesheet" href="/dark-theme.css">
 </head>
 <body>
     <input type="button" value="Run" id="embedRun">
     <div id="banner">
-        <div id="head">The Joy playground V2</div>
+        <div id="head">The Joy playground</div>
         <div id="controls">
             <input type="button" value="Run" id="run">
             <input type="button" value="Format" id="fmt">
@@ -28,6 +29,7 @@
             </div>
             <input type="button" value="Share" id="share">
             <input type="text" id="shareURL" style="display: none;">
+            <input type="button" value="Dark mode" id="switchTheme">
         </div>
     </div>
 
@@ -68,6 +70,18 @@ func main() {
     <script src="/playground-embed.js"></script>
 
     <script>
+        API = "https://api.joyplayground.tryy3.us/api"
+
+        if (window.location.pathname.indexOf("/p/") !== -1) {            
+            $.ajax(API + window.location.pathname, {
+                type: "GET",
+                dataType: 'html',
+                success: function(data) {
+                    $("#code").html(data)
+                }
+            });
+        }
+
         playground({
             'codeEl':       '#code',
             'jsEl':         '#jscode',
@@ -82,7 +96,7 @@ func main() {
             'enableHistory': true,
             'enableShortcuts': true,
 
-            'API': 'https://tzquj4eard.execute-api.us-east-1.amazonaws.com/joyplayground'
+            'API': API
         });
         playgroundEmbed({
             'codeEl':       '#code',
@@ -93,7 +107,7 @@ func main() {
             'embedLabelEl': '#embedLabel',
             'embedHTMLEl':  '#shareURL',
 
-            'API': 'https://tzquj4eard.execute-api.us-east-1.amazonaws.com/joyplayground'
+            'API': API
         });
 
         $('#code').linedtextarea();
@@ -137,6 +151,58 @@ func main() {
                 lastPos = e.clientX
                 resize()
             })
+
+        $("#switchTheme").click(function() {
+            if ($(this).val().indexOf("Dark") !== -1) {
+                $(this).val("Light mode")
+                $("body").addClass("dark")
+                setCookie("theme", "dark")
+            } else {
+                $(this).val("Dark mode")
+                $("body").removeClass("dark")
+                setCookie("theme", "light")
+            }
+        })
+
+        $(document).ready(function() {
+            var theme = getCookie("theme")
+            if (theme == null) return
+            if (theme == "dark") {
+                $("#switchTheme").val("Light mode")
+                $("body").addClass("dark")
+            } 
+        })
+
+        function setCookie(name, val) {
+            var cookies = document.cookie.split("; ")
+            if (!cookies) cookies = []
+            var c = name + "=" + val
+            var set = false
+            var path = false
+            for (var i = cookies.length - 1; i >= 0; i--) {
+                let key = cookies[i].split("=")[0]
+                if (key == "") cookies.splice(i, 1)
+                if (key == "path") path = true
+                if (key == name) {
+                    cookies[i] = c
+                    set = true
+                }
+            }
+            if (!set) cookies.push(c)
+            if (!path) cookies.push("path=/")
+            document.cookie = cookies.join(";")
+        }
+
+        function getCookie(name) {
+            var cookies = document.cookie.split(";")
+            for (var i = 0; i < cookies.length; i++) {
+                var c = cookies[i].split("=")
+                if (c[0] == name) {
+                    return c[1]
+                }
+            }
+            return null
+        }
 
         $(window).resize(resize)
         resize()

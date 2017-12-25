@@ -1,0 +1,2 @@
+# Rewrite /p/{id} to /index.html without redirect
+/p/* /index.html 200
