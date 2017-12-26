@@ -10,11 +10,13 @@ Playground for https://github.com/matthewmueller/joy based on https://github.com
 
 ### Installation
 Start with installing the aws-lambda-go-shim
-``` docker pull eawsy/aws-lambda-go-shim:latest
-go get -u -d github.com/eawsy/aws-lambda-go-core/... ```
 
-Next compile the go code by running the makefile
-``` make ```
+```
+docker pull eawsy/aws-lambda-go-shim:latest
+go get -u -d github.com/eawsy/aws-lambda-go-core/...
+```
+
+Next compile the go code by running the makefile `make`
 
 Now you can deploy the backend by uploading the handler.zip to your AWS Lambda function.
 Make sure the Lambda function is configured like: 
@@ -28,8 +30,9 @@ The lambda function also need 3 environment variables to work:
 
 Once the backend is up and running you will need to configure an API gateway for your lambda function, so your frontend can talk to your backend.
 Configure the API gateway to look something like this:
+
 ```
-it{
+{
     "paths": {
         "/compile": {
             "methods": ["post", "options"]
@@ -46,6 +49,7 @@ it{
     },
 }
 ```
+
 Make sure to enable CORS on the paths.
 
 Now that the backend is deployed you can configure the frontend. The frontend is just static files that communicate with the backend through ajax.
