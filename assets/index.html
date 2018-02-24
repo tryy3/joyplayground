@@ -4,14 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Joyplayground</title>
     <link rel="stylesheet" href="/playground.css">
     <link rel="stylesheet" href="/dark-theme.css">
+    <link rel="stylesheet" href="/codemirror.css">
+    <link rel="stylesheet" href="/popper.css">
+
+    <script defer src="/fontawesome.js"></script>
 </head>
 <body>
     <input type="button" value="Run" id="embedRun">
     <div id="banner">
-        <div id="head">The Joy playground</div>
+        <div id="head">The Joy tests</div>
         <div id="controls">
             <input type="button" value="Run" id="run">
             <input type="button" value="Format" id="fmt">
@@ -33,41 +37,47 @@
         </div>
     </div>
 
-    <div id="leftWrap">
-        <div class="editorTitle">
-            Golang
-        </div>
-        <textarea itemprop="description" class="code" id="code" name="code" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off">package main 
- 
-import ( 
-    "fmt" 
-) 
-    
-func main() { 
-    fmt.Println("Hello, playground") 
+    <div id="grid">
+        <div class="code">
+            <textarea id="code" style="display: none;">package main
+
+import (
+    "fmt"
+)
+
+func main() {
+    fmt.Println("Hello, playground")
 }</textarea>
-    </div>
-    <div id="resizableVertical" title="Drag to resize."></div>
-    <div id="rightWrap">
-        <div class="editorTitle">
-            Javascript
         </div>
-        <pre itemprop="description" class="code" id="jscode" name="jscode" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" style="width: 97%;" wrap="off"></pre>
+        <div id="resizableVertical" title="Drag to resize." style="display: none"></div>
+        <div class="panel">
+            <div id="compiled" style="display: none"></div>
+            <div id="live" style="display: none"></div>
+            <div id="console" style="display: none">
+                <div class="editorTitle">
+                    Console Output
+                </div>
+                <div id="output">
+                    <pre></pre>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar">
+            <div class="sidebar-box compiled"><i data-fa-transform="down-8 right-8" class="fab fa-js-square"></i></div>
+            <div class="sidebar-box live"><i data-fa-transform="down-8 right-8" class="fas fa-eye"></i></div>
+            <div class="sidebar-box console"><i data-fa-transform="down-8 right-8" class="fas fa-terminal"></i></div>
+        </div>
     </div>
 
-    <div id="console">
-        <div class="editorTitle">
-            Console Output
-        </div>
-        <div id="output">
-            <pre></pre>
-        </div>
-    </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-    <script src="/jquery-linedtextarea.js"></script>
     <script src="/playground.js"></script>
     <script src="/playground-embed.js"></script>
+
+    <script src="/popper.min.js"></script>
+    <script src="/tooltip.min.js"></script>
+
+    <script src="/codemirror.js"></script>
+    <script src="/go.js"></script>
+    <script src="/javascript.js"></script>
 
     <script>
         API = "https://api.joyplayground.tryy3.us/api"
@@ -82,139 +92,49 @@ func main() {
             });
         }
 
-        playground({
-            'codeEl':       '#code',
-            'jsEl':         '#jscode',
-            'outputEl':     '#output',
-            'runEl':        '#run, #embedRun',
-            'fmtEl':        '#fmt',
-            'fmtImportEl':  '#imports',
-            
-            'shareEl':      '#share',
-            'shareURLEl':   '#shareURL',
-            
-            'enableHistory': true,
-            'enableShortcuts': true,
-
-            'API': API
-        });
-        playgroundEmbed({
-            'codeEl':       '#code',
-            
-            'shareEl':      '#share',
-            
-            'embedEl':      '#embed',
-            'embedLabelEl': '#embedLabel',
-            'embedHTMLEl':  '#shareURL',
-
-            'API': API
+        var code = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            mode: "go",
         });
 
-        $('#code').linedtextarea();
-        $('#code').attr('wrap', 'off');
-
-        $('#jscode').linedtextarea();
-        $('#jscode').attr('wrap', 'off');
-
-        var offset = 0;
-        var isDragging = false;
-        var lastPos = null;
-
-        function resize() {
-            var resizeWidth = $("#resizableVertical").width() - 3
-            $("#leftWrap").width(($("body").width() / 2 - resizeWidth - 10 - offset) + "px")
-            $("#rightWrap").width(($("body").width() / 2 - resizeWidth - 10 + offset) + "px")
-            $("#resizableVertical").css("left", ($("body").width() / 2 - 10 - offset) + "px")
-
-            $(".linedtextarea").each(function() {
-                var paddingBottom = 15
-                var title = $(this).siblings(".editorTitle").outerHeight()
-                $(this).height(($(this).parent().height() - title - paddingBottom) + "px")
-            })
-        }
-
-        $("#resizableVertical")
-            .mousedown(function(e) {
-                e.preventDefault()
-                isDragging = true;
-                lastPos = e.clientX
-            })
-            .mouseup(function() {
-                isDragging = false;
-            })
-        
-        $("body")
-            .mousemove(function(e) {
-                if (!isDragging) return
-                if (e.clientX == lastPos) return
-                offset = offset - (e.clientX - lastPos)
-                lastPos = e.clientX
-                resize()
-            })
-
-        $("#switchTheme").click(function() {
-            if ($(this).val().indexOf("Dark") !== -1) {
-                $(this).val("Light mode")
-                $("body").addClass("dark")
-                setCookie("theme", "dark")
-            } else {
-                $(this).val("Dark mode")
-                $("body").removeClass("dark")
-                setCookie("theme", "light")
-            }
+        var compiled = CodeMirror(document.getElementById("compiled"), {
+            lineNumbers: true,
+            mode: "javascript",
+            readOnly: true,
+            value: `;(function() {
+  var pkg = {};
+  pkg["playground"] = (function() {
+    function main () {
+      console.log.apply(console.log, ["Hello, playground"])
+    };
+    return {
+      main: main
+    };
+  })();
+  return pkg["playground"].main();
+})()`
         })
 
-        $(document).ready(function() {
-            var theme = getCookie("theme")
-            if (theme == null) return
-            if (theme == "dark") {
-                $("#switchTheme").val("Light mode")
-                $("body").addClass("dark")
-            } 
+        new Editor({
+            code: code,
+            output: compiled,
+            api: api,
+            panels: [
+                {
+                    name: "compiled",
+                    tooltip: {placement: 'left', trigger: 'hover', title: 'compiled code'},
+                    editor: compiled
+                },
+                {
+                    name: "live",
+                    tooltip: {placement: 'left', trigger: 'hover', title: 'live-preview'},
+                },
+                {
+                    name: "console",
+                    tooltip: {placement: 'left', trigger: 'hover', title: 'console'},
+                },
+            ]
         })
-
-        function setCookie(name, val) {
-            var cookies = document.cookie.split("; ")
-            if (!cookies) cookies = []
-            var c = name + "=" + val
-            var set = false
-            var path = false
-            for (var i = cookies.length - 1; i >= 0; i--) {
-                let key = cookies[i].split("=")[0]
-                if (key == "") cookies.splice(i, 1)
-                if (key == "path") path = true
-                if (key == name) {
-                    cookies[i] = c
-                    set = true
-                }
-            }
-            if (!set) cookies.push(c)
-            if (!path) cookies.push("path=/")
-            document.cookie = cookies.join(";")
-        }
-
-        function getCookie(name) {
-            var cookies = document.cookie.split(";")
-            for (var i = 0; i < cookies.length; i++) {
-                var c = cookies[i].split("=")
-                if (c[0] == name) {
-                    return c[1]
-                }
-            }
-            return null
-        }
-
-        $(window).resize(resize)
-        resize()
-
-        if (window.trackEvent) {
-            $('#run').click(function() {
-                window.trackEvent('playground', 'click', 'run-button');
-            });
-            $('#share').click(function() {
-                window.trackEvent('playground', 'click', 'share-button');
-            });
-        }
     </script>
 </body>
 </html>

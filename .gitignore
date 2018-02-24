@@ -1,3 +1,4 @@
 handler.so
 handler.zip
-/assets/.netlify
+.netlify
+netlify.toml
