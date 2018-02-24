@@ -512,6 +512,23 @@ function formatGridColumns(widths) {
     return widths[0] + "px 0.4em " + widths[1] + "px 50px"
 }
 
+// containParentClass will transcend up from an element and check for specific class name until it hits document
+function containParentClass(target, className, parent) {
+    if (target == null) return
+    if (target == document) return
+    if (elementHasClassName(target, className)) return target
+    if (target == parent) return
+
+    return containParentClass(target.parentElement, className, parent)
+}
+
+// elementHasClassName checks if a target has a specific class name
+function elementHasClassName(target, className) {
+    if (target.classList == undefined) return false
+    if (!target.classList.contains(className)) return false
+    return true
+}
+
 // Editor is the constructor for the whole Editor process, opening, closing, updating etc.
 var Editor = function(config) {
     var self = this
@@ -534,37 +551,35 @@ var Editor = function(config) {
 
     // Look for click events on the panels
     document.addEventListener("click", function(e) {
-            // Check if the click event is a panel
-        for (var path of e.path) {
-            if (path.classList == undefined) continue
-            if (path.classList.contains("sidebar-box")) {
-                // get the panel name
-                var name = ""
-                for (var clazz of path.classList) {
-                    if (clazz == "sidebar-box") continue
-                    name = clazz
-                    break
-                }
+        // Check if the click event is a panel
+        var target = containParentClass(e.target, "sidebar-box")
+        if (target == undefined) return
 
-                // if no panel name was found, then simply close everything
-                // could happen if you want a button for closing all panels and such
-                if (name == "") {
-                    self.updateSidebar("")
-                    return
-                }
+        // get the panel name
+        var name = ""
+        for (var clazz of target.classList) {
+            if (clazz == "sidebar-box") continue
+            name = clazz
+            break
+        }
 
-                // update the panel/sidebar
-                for (var panel of self.panels) {
-                    if (panel.name == name) {
-                        self.updateSidebar(panel)
-                        return
-                    }
-                }
+        // if no panel name was found, then simply close everything
+        // could happen if you want a button for closing all panels and such
+        if (name == "") {
+            self.updateSidebar("")
+            return
+        }
 
-                self.updateSidebar("")
+        // update the panel/sidebar
+        for (var panel of self.panels) {
+            if (panel.name == name) {
+                self.updateSidebar(panel)
                 return
             }
         }
+
+        self.updateSidebar("")
+        return
     })
 
     // detect if someone is trying to move the resizeableVertical
