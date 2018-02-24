@@ -1,48 +1,47 @@
 package main
 
 import (
-	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
 	"testing"
+
+	"github.com/aws/aws-lambda-go/events"
 )
 
-var inputFmt string = `{
-	"path": "/fmt",
-	"body": "{\"body\":\"package main \\n \\nimport ( \\n    \\\"fmt\\\" \\n) \\n    \\nfunc main() { \\nfmt.Println(\\\"Hello, playground\\\") \\n}\"}"
-}`
+var inputFmt events.APIGatewayProxyRequest = events.APIGatewayProxyRequest{
+	Path: "/fmt",
+	Body: `"{\"body\":\"package main \\n \\nimport ( \\n    \\\"fmt\\\" \\n) \\n    \\nfunc main() { \\nfmt.Println(\\\"Hello, playground\\\") \\n}\"}"`,
+}
 
 var expectedFmtBody string = "{\"Body\":\"package main\\n\\nimport (\\n\\t\\\"fmt\\\"\\n)\\n\\nfunc main() {\\n\\tfmt.Println(\\\"Hello, playground\\\")\\n}\\n\",\"Error\":\"\"}"
 
 func TestFmt(t *testing.T) {
-	ctx := &runtime.Context{}
-	out, err := Handle([]byte(inputFmt), ctx)
+	out, err := Handle(inputFmt)
 	if err != nil {
 		t.Error(err)
 	}
-	if out.(Response).StatusCode != 200 {
-		t.Errorf("error in handler: " + out.(Response).Body)
+	if out.StatusCode != 200 {
+		t.Errorf("error in handler: " + out.Body)
 	}
-	if out.(Response).Body != expectedFmtBody {
+	if out.Body != expectedFmtBody {
 		t.Errorf("Invalid expected body data")
 	}
 }
 
-var inputFmtImport string = `{
-	"path": "/fmt",
-	"body": "{\"body\":\"package main\\n\\nfunc main() {\\n\\tfmt.Println(\\\"Hello, playground\\\")\\n}\\n\",\"imports\":true}"
-}`
+var inputFmtImport events.APIGatewayProxyRequest = events.APIGatewayProxyRequest{
+	Path: "/fmt",
+	Body: `"{\"body\":\"package main\\n\\nfunc main() {\\n\\tfmt.Println(\\\"Hello, playground\\\")\\n}\\n\",\"imports\":true}"`,
+}
 
 var expectedFmtImportBody string = "{\"Body\":\"package main\\n\\nimport \\\"fmt\\\"\\n\\nfunc main() {\\n\\tfmt.Println(\\\"Hello, playground\\\")\\n}\\n\",\"Error\":\"\"}"
 
 func TestFmtImport(t *testing.T) {
-	ctx := &runtime.Context{}
-	out, err := Handle([]byte(inputFmtImport), ctx)
+	out, err := Handle(inputFmtImport)
 	if err != nil {
 		t.Error(err)
 	}
-	if out.(Response).StatusCode != 200 {
-		t.Errorf("error in handler: " + out.(Response).Body)
+	if out.StatusCode != 200 {
+		t.Errorf("error in handler: " + out.Body)
 	}
-	if out.(Response).Body != expectedFmtImportBody {
+	if out.Body != expectedFmtImportBody {
 		t.Errorf("Invalid expected body data")
 	}
 }

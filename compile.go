@@ -13,20 +13,19 @@ import (
 	"path/filepath"
 	"regexp"
 	"syscall"
-	"time"
 
+	"github.com/aws/aws-lambda-go/events"
 	apibuild "github.com/matthewmueller/joy/api/build"
 )
 
-// Event is the expected data from the output when you compile the code
-type Event struct {
-	Message string
-	Kind    string        // "stdout" or "stderr"
-	Delay   time.Duration // time to wait before printing Message
+// CompileOutput is the expected data when outputting compiled code
+type CompileOutput struct {
+	Compiled string `json:"compiled"`
+	Error    string `json:"error"`
 }
 
 // compileHandler handles all of the incoming requests for compile
-func compileHandler(r Request) (interface{}, error) {
+func compileHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// decode the request body
 	var req BodyRequest
 	if err := json.Unmarshal([]byte(r.Body), &req); err != nil {
@@ -38,7 +37,7 @@ func compileHandler(r Request) (interface{}, error) {
 	resp, err := compileAndRun(&req)
 	if err != nil {
 		log.Printf("Compile error: %v\n", err)
-		return nil, err
+		return events.APIGatewayProxyResponse{}, err
 	}
 
 	// encode the output of the compile
@@ -52,7 +51,7 @@ func compileHandler(r Request) (interface{}, error) {
 
 // compileAndRun will compile the golang code by first creating a temp file
 // and then using joy to compile the code to javascript
-func compileAndRun(req *BodyRequest) (*ResponseEvents, error) {
+func compileAndRun(req *BodyRequest) (*CompileOutput, error) {
 	// create a new directory in the OS's temp dir
 	tmpDir, err := ioutil.TempDir("", "sandbox")
 	if err != nil {
@@ -72,7 +71,7 @@ func compileAndRun(req *BodyRequest) (*ResponseEvents, error) {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, in, nil, parser.PackageClauseOnly)
 	if err == nil && f.Name.Name != "main" {
-		return &ResponseEvents{Errors: "package name must be main"}, nil
+		return &CompileOutput{Error: "package name must be main"}, nil
 	}
 
 	ctx := trap(syscall.SIGINT, syscall.SIGTERM)
@@ -84,27 +83,23 @@ func compileAndRun(req *BodyRequest) (*ResponseEvents, error) {
 		JoyPath:  "/tmp",
 	})
 	if err != nil {
-		return &ResponseEvents{Errors: fmt.Sprintf("error building code: %v", err)}, nil
+		return &CompileOutput{Error: fmt.Sprintf("error building code: %v", err)}, nil
 	} else if len(files) != 1 {
-		return &ResponseEvents{Errors: fmt.Sprintf("joy run expects only 1 main file, but received %d files", len(files))}, nil
+		return &CompileOutput{Error: fmt.Sprintf("joy run expects only 1 main file, but received %d files", len(files))}, nil
 	}
 
-	//
-	var events []Event
-	regPkgName, err := regexp.Compile(`pkg\[(.+)\]`)
+	regPkgName, err := regexp.Compile(`pkg\[(.+)]`)
 	if err != nil {
-		return &ResponseEvents{Errors: fmt.Sprintf("error compiling regex", err)}, nil
+		return &CompileOutput{Error: fmt.Sprintf("error compiling regex: %s", err)}, nil
 	}
 
 	// rewrite any mentions of the tmpdir and replace with pkg["playground"]
 	// TODO: Maybe switch out "playground" with something else?
-	fileEvent := Event{
-		Message: regPkgName.ReplaceAllString(files[0].Source(), "pkg[\"playground\"]"),
-		Kind:    "file",
+	output := &CompileOutput{
+		Compiled: regPkgName.ReplaceAllString(files[0].Source(), "pkg[\"playground\"]"),
 	}
-	events = append(events, fileEvent)
 
-	return &ResponseEvents{Events: events}, nil
+	return output, nil
 }
 
 func trap(sig ...os.Signal) context.Context {

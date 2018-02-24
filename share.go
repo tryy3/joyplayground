@@ -5,9 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,10 +12,16 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 // shareHandler handles all of the requests when sharing golang code
-func shareHandler(r Request) (interface{}, error) {
+func shareHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	id, err := storeSnippet([]byte(r.Body))
 	if err != nil {
 		log.Printf("couldn't store snippet: %v", err)
@@ -29,7 +32,7 @@ func shareHandler(r Request) (interface{}, error) {
 }
 
 // pHandler handles all of the requests when someone tries to retrieve golang code from an ID
-func pHandler(r Request) (interface{}, error) {
+func pHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// get the ID from path
 	id := r.Path[strings.Index(r.Path, "p/")+2:]
 	err := validateID(id)
@@ -58,13 +61,18 @@ func storeSnippet(body []byte) (id string, err error) {
 	sess := session.Must(session.NewSession())
 	svc := s3.New(sess)
 
-	input := &s3.PutObjectInput{
-		Body:   aws.ReadSeekCloser(bytes.NewReader(body)),
+	// Create an uploader with S3 client and default options
+	uploader := s3manager.NewUploaderWithClient(svc)
+
+	// Upload input parameters
+	upParams := &s3manager.UploadInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET")),
 		Key:    aws.String(id),
+		Body:   bytes.NewReader(body),
 	}
 
-	_, err = svc.PutObject(input)
+	// Perform an upload.
+	_, err = uploader.Upload(upParams)
 	if err != nil {
 		return "", fmt.Errorf("error sending s3 object: %v", err)
 	}
@@ -102,7 +110,8 @@ func validateID(id string) error {
 
 // getSnippetFromS3Store tries to get the snippet with given id from s3 bucket.
 func getSnippetFromS3Store(id string) (string, error) {
-	svc := s3.New(session.New())
+	sess := session.Must(session.NewSession())
+	svc := s3.New(sess)
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET")),
 		Key:    aws.String(id),
@@ -148,7 +157,7 @@ func getSnippetFromGoPlayground(id string) (string, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return "", fmt.Errorf("Go Playground returned unexpected status code %v", resp.StatusCode)
+		return "", fmt.Errorf("go playground returned unexpected status code %v", resp.StatusCode)
 	}
 
 	snippet, err := ioutil.ReadAll(resp.Body)

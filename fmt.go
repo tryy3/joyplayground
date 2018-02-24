@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/format"
-	"golang.org/x/tools/imports"
 	"log"
+
+	"github.com/aws/aws-lambda-go/events"
+	"golang.org/x/tools/imports"
 )
 
 // fmtHandler handles formatting golang code
-func fmtHandler(r Request) (interface{}, error) {
+func fmtHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var (
 		out []byte
 		err error

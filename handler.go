@@ -1,13 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
-	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 )
 
 // Response is the expected data when outputting to a HTTP request
@@ -28,12 +28,6 @@ type BodyRequest struct {
 	Body string
 }
 
-// ResponseEvents is the expected data when outputting the response from compiling golang code
-type ResponseEvents struct {
-	Errors string
-	Events []Event
-}
-
 // fmtRequest is the expected data for the Body in Request struct when formatting golang code
 type fmtRequest struct {
 	Body    string
@@ -47,8 +41,8 @@ type fmtResponse struct {
 }
 
 // successResponse is a wrapper for outputting a message
-func successResponse(msg string) Response {
-	return Response{
+func successResponse(msg string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       msg,
 		Headers: map[string]string{
@@ -58,18 +52,18 @@ func successResponse(msg string) Response {
 }
 
 // errorResponse is a wrapper for outputting an error
-func errorResponse(msg string, statusCode int) Response {
-	return Response{
+func errorResponse(msg string, statusCode int) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
 		StatusCode: statusCode,
-		Body:       msg,
 		Headers: map[string]string{
 			"Access-Control-Allow-Origin": "*",
 		},
+		Body: msg,
 	}
 }
 
 // Handle is the main function, it will check the Path in evt json.RawMessage and then determine what function to run
-func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
+func Handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// Add working directory to PATH, used for lambda functions.
 	p := os.Getenv("PATH")
 	dir, err := os.Getwd()
@@ -82,27 +76,20 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		return errorResponse(fmt.Sprintf("error setting PATH: %v", err), 400), nil
 	}
 
-	// Unmarshal the incoming request
-	var req Request
-	if err := json.Unmarshal(evt, &req); err != nil {
-		log.Printf("error decoding request: %v\n", err)
-		if e, ok := err.(*json.SyntaxError); ok {
-			log.Printf("syntax error at byte offset %d", e.Offset)
-			return errorResponse(fmt.Sprintf("error decoding request: syntax error at byte offset %d", e.Offset), 400), nil
-		}
-		return errorResponse(fmt.Sprintf("error decoding request: %v", err), 400), nil
-	}
-
 	// Determine what function to run based on path
-	if strings.Contains(req.Path, "/compile") {
-		return compileHandler(req)
-	} else if strings.Contains(req.Path, "/fmt") {
-		return fmtHandler(req)
-	} else if strings.Contains(req.Path, "/share") {
-		return shareHandler(req)
-	} else if strings.Contains(req.Path, "/p") {
-		return pHandler(req)
+	if strings.Contains(request.Path, "/compile") {
+		return compileHandler(request)
+	} else if strings.Contains(request.Path, "/fmt") {
+		return fmtHandler(request)
+	} else if strings.Contains(request.Path, "/share") {
+		return shareHandler(request)
+	} else if strings.Contains(request.Path, "/p") {
+		return pHandler(request)
 	}
 
 	return errorResponse("Invalid path", 404), nil
+}
+
+func main() {
+	lambda.Start(Handle)
 }

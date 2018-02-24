@@ -1,22 +1,24 @@
 package main
 
 import (
-	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
+	"fmt"
 	"testing"
+
+	"github.com/aws/aws-lambda-go/events"
 )
 
-var inputCompile string = `{
-	"path": "/compile",
-	"body": "{\"version\":2,\"body\":\"package main \\n \\nimport ( \\n    \\\"fmt\\\" \\n) \\n    \\nfunc main() { \\n    fmt.Println(\\\"Hello, playground\\\") \\n}\"}"
-}`
+var inputCompile events.APIGatewayProxyRequest = events.APIGatewayProxyRequest{
+	Path: "/compile",
+	Body: `{"version":2,"body":"package main \n \nimport ( \n    \"fmt\" \n) \n    \nfunc main() { \n    fmt.Println(\"Hello, playground\") \n}"}`,
+}
 
 func TestCompile(t *testing.T) {
-	ctx := &runtime.Context{}
-	out, err := Handle([]byte(inputCompile), ctx)
+	out, err := Handle(inputCompile)
 	if err != nil {
 		t.Error(err)
 	}
-	if out.(Response).StatusCode != 200 {
-		t.Errorf("error in handler: " + out.(Response).Body)
+	fmt.Println(out.Body)
+	if out.StatusCode != 200 {
+		t.Errorf("error in handler: " + out.Body)
 	}
 }
