@@ -8,7 +8,7 @@ import (
 
 var inputFmt events.APIGatewayProxyRequest = events.APIGatewayProxyRequest{
 	Path: "/fmt",
-	Body: `"{\"body\":\"package main \\n \\nimport ( \\n    \\\"fmt\\\" \\n) \\n    \\nfunc main() { \\nfmt.Println(\\\"Hello, playground\\\") \\n}\"}"`,
+	Body: `{"body":"package main \n \nimport ( \n    \"fmt\" \n) \n    \nfunc main() { \nfmt.Println(\"Hello, playground\") \n}"}`,
 }
 
 var expectedFmtBody string = "{\"Body\":\"package main\\n\\nimport (\\n\\t\\\"fmt\\\"\\n)\\n\\nfunc main() {\\n\\tfmt.Println(\\\"Hello, playground\\\")\\n}\\n\",\"Error\":\"\"}"
@@ -22,13 +22,13 @@ func TestFmt(t *testing.T) {
 		t.Errorf("error in handler: " + out.Body)
 	}
 	if out.Body != expectedFmtBody {
-		t.Errorf("Invalid expected body data")
+		t.Errorf("invalid expected body data")
 	}
 }
 
 var inputFmtImport events.APIGatewayProxyRequest = events.APIGatewayProxyRequest{
 	Path: "/fmt",
-	Body: `"{\"body\":\"package main\\n\\nfunc main() {\\n\\tfmt.Println(\\\"Hello, playground\\\")\\n}\\n\",\"imports\":true}"`,
+	Body: `{"body":"package main\n\nfunc main() {\n\tfmt.Println(\"Hello, playground\")\n}\n","imports":true}`,
 }
 
 var expectedFmtImportBody string = "{\"Body\":\"package main\\n\\nimport \\\"fmt\\\"\\n\\nfunc main() {\\n\\tfmt.Println(\\\"Hello, playground\\\")\\n}\\n\",\"Error\":\"\"}"
@@ -42,6 +42,6 @@ func TestFmtImport(t *testing.T) {
 		t.Errorf("error in handler: " + out.Body)
 	}
 	if out.Body != expectedFmtImportBody {
-		t.Errorf("Invalid expected body data")
+		t.Errorf("invalid expected body data")
 	}
 }

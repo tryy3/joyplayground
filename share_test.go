@@ -7,11 +7,11 @@ import (
 )
 
 var inputShare events.APIGatewayProxyRequest = events.APIGatewayProxyRequest{
-	Path: "/fmt",
+	Path: "/share",
 	Body: `"package main \n \nimport ( \n    \"fmt\" \n) \n    \nfunc main() { \n    fmt.Println(\"Hello, playground test\") \n}"`,
 }
 
-var shareID string = "IAAEPbTy59"
+var shareID string = "Tf4IB75zMW"
 
 func TestShare(t *testing.T) {
 	out, err := Handle(inputShare)

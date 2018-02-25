@@ -18,20 +18,28 @@
         <div id="head">The Joy tests</div>
         <div id="controls">
             <input type="button" value="Run" id="run">
-            <input type="button" value="Format" id="fmt">
-            <div id="importsBox">
-                <label title="Rewrite imports on Format">
-                    <input type="checkbox" id="imports">
-                    Imports
-                </label>
+            <div class="dropdown">
+                <input class="dropbtn" type="button" value="Format" id="fmt">
+                <div class="dropdown-content">
+                    <div id="importsBox">
+                        <label class="container" title="Rewrite imports on Format">Imports
+                            <input type="checkbox">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div id="embedBox">
-                <label id="embedLabel" title="Embed the playground">
-                    <input type="checkbox" id="embed">
-                    Embed
-                </label>
+            <div class="dropdown">
+                <input class="dropbtn" type="button" value="Share" id="share">
+                <div class="dropdown-content">
+                    <div id="embedBox">
+                        <label class="container" title="Rewrite imports on Format">Embed
+                            <input type="checkbox">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
-            <input type="button" value="Share" id="share">
             <input type="text" id="shareURL" style="display: none;">
             <input type="button" value="Dark mode" id="switchTheme">
         </div>
@@ -52,7 +60,14 @@ func main() {
         <div id="resizableVertical" title="Drag to resize." style="display: none"></div>
         <div class="panel">
             <div id="compiled" style="display: none"></div>
-            <div id="live" style="display: none"></div>
+            <div id="live" style="display: none">
+                <iframe id="result" sandbox="allow-scripts">
+                    <html>
+                        <head></head>
+                        <body></body>
+                    </html>
+                </iframe>
+            </div>
             <div id="console" style="display: none">
                 <div class="editorTitle">
                     Console Output
@@ -70,7 +85,6 @@ func main() {
     </div>
 
     <script src="/playground.js"></script>
-    <script src="/playground-embed.js"></script>
 
     <script src="/popper.min.js"></script>
     <script src="/tooltip.min.js"></script>
@@ -82,16 +96,6 @@ func main() {
     <script>
         API = "https://api.joyplayground.tryy3.us/api"
 
-        if (window.location.pathname.indexOf("/p/") !== -1) {            
-            $.ajax(API + window.location.pathname, {
-                type: "GET",
-                dataType: 'html',
-                success: function(data) {
-                    $("#code").html(data)
-                }
-            });
-        }
-
         var code = CodeMirror.fromTextArea(document.getElementById("code"), {
             lineNumbers: true,
             mode: "go",
@@ -101,24 +105,13 @@ func main() {
             lineNumbers: true,
             mode: "javascript",
             readOnly: true,
-            value: `;(function() {
-  var pkg = {};
-  pkg["playground"] = (function() {
-    function main () {
-      console.log.apply(console.log, ["Hello, playground"])
-    };
-    return {
-      main: main
-    };
-  })();
-  return pkg["playground"].main();
-})()`
+            value: ''
         })
 
         new Editor({
             code: code,
             output: compiled,
-            api: API,
+            api: api,
             panels: [
                 {
                     name: "compiled",

@@ -63,6 +63,8 @@ func compileAndRun(req *BodyRequest) (*CompileOutput, error) {
 
 	// create a new main.go file in the tmpDir
 	in := filepath.Join(tmpDir, "main.go")
+	log.Println(in)
+	log.Println(req.Body)
 	if err := ioutil.WriteFile(in, []byte(req.Body), 0400); err != nil {
 		return nil, fmt.Errorf("error creating temp file %q: %v", in, err)
 	}
@@ -81,6 +83,7 @@ func compileAndRun(req *BodyRequest) (*CompileOutput, error) {
 		Context:  ctx,
 		Packages: []string{in},
 		JoyPath:  "/tmp",
+		//GoPath:   os.Getenv("LAMBDA_RUNTIME_DIR") + "/aws-lambda-go",
 	})
 	if err != nil {
 		return &CompileOutput{Error: fmt.Sprintf("error building code: %v", err)}, nil
