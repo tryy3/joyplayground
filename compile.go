@@ -21,6 +21,7 @@ import (
 // CompileOutput is the expected data when outputting compiled code
 type CompileOutput struct {
 	Compiled string `json:"compiled"`
+	ID       string `json:"id"`
 	Error    string `json:"error"`
 }
 
@@ -34,7 +35,7 @@ func compileHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 	}
 
 	// compile and run the code
-	resp, err := compileAndRun(&req)
+	resp, err := compileAndRun(req.Body)
 	if err != nil {
 		log.Printf("Compile error: %v\n", err)
 		return events.APIGatewayProxyResponse{}, err
@@ -51,7 +52,7 @@ func compileHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResp
 
 // compileAndRun will compile the golang code by first creating a temp file
 // and then using joy to compile the code to javascript
-func compileAndRun(req *BodyRequest) (*CompileOutput, error) {
+func compileAndRun(snippet string) (*CompileOutput, error) {
 	// create a new directory in the OS's temp dir
 	tmpDir, err := ioutil.TempDir("", "sandbox")
 	if err != nil {
@@ -63,9 +64,7 @@ func compileAndRun(req *BodyRequest) (*CompileOutput, error) {
 
 	// create a new main.go file in the tmpDir
 	in := filepath.Join(tmpDir, "main.go")
-	log.Println(in)
-	log.Println(req.Body)
-	if err := ioutil.WriteFile(in, []byte(req.Body), 0400); err != nil {
+	if err := ioutil.WriteFile(in, []byte(snippet), 0400); err != nil {
 		return nil, fmt.Errorf("error creating temp file %q: %v", in, err)
 	}
 
@@ -98,8 +97,16 @@ func compileAndRun(req *BodyRequest) (*CompileOutput, error) {
 
 	// rewrite any mentions of the tmpdir and replace with pkg["playground"]
 	// TODO: Maybe switch out "playground" with something else?
+	compiled := regPkgName.ReplaceAllString(files[0].Source(), "pkg[\"playground\"]")
+
+	id, err := storeSnippet("js/", []byte(compiled))
+	if err != nil {
+		return &CompileOutput{Error: fmt.Sprintf("error saving compiled snippet: %s", err)}, nil
+	}
+
 	output := &CompileOutput{
-		Compiled: regPkgName.ReplaceAllString(files[0].Source(), "pkg[\"playground\"]"),
+		Compiled: compiled,
+		ID:       id,
 	}
 
 	return output, nil

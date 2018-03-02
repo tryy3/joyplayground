@@ -85,6 +85,8 @@ func Handle(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespon
 		return shareHandler(request)
 	} else if strings.Contains(request.Path, "/p") {
 		return pHandler(request)
+	} else if strings.Contains(request.Path, "/js") {
+		return jsHandler(request)
 	}
 
 	return errorResponse("Invalid path", 404), nil

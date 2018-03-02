@@ -5,21 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Joyplayground</title>
-    <link rel="stylesheet" href="/playground.css">
-    <link rel="stylesheet" href="/dark-theme.css">
+
     <link rel="stylesheet" href="/codemirror.css">
     <link rel="stylesheet" href="/popper.css">
+
+    <link rel="stylesheet" href="/playground.css">
+    <link rel="stylesheet" href="/dark-theme.css">
 
     <script defer src="/fontawesome.js"></script>
 </head>
 <body>
-    <input type="button" value="Run" id="embedRun">
     <div id="banner">
         <div id="head">The Joy tests</div>
         <div id="controls">
-            <input type="button" value="Run" id="run">
+            <button type="button" id="run"><i class="fas fa-spinner fa-pulse" style="display:none"></i> Run</button>
             <div class="dropdown">
-                <input class="dropbtn" type="button" value="Format" id="fmt">
+                <button class="dropbtn" type="button" id="fmt"><i class="fas fa-spinner fa-pulse" style="display:none"></i> Format</button>
                 <div class="dropdown-content">
                     <div id="importsBox">
                         <label class="container" title="Rewrite imports on Format">Imports
@@ -30,7 +31,7 @@
                 </div>
             </div>
             <div class="dropdown">
-                <input class="dropbtn" type="button" value="Share" id="share">
+                <button class="dropbtn" type="button" id="share"><i class="fas fa-spinner fa-pulse" style="display:none"></i> Share</button>
                 <div class="dropdown-content">
                     <div id="embedBox">
                         <label class="container" title="Rewrite imports on Format">Embed
@@ -41,7 +42,21 @@
                 </div>
             </div>
             <input type="text" id="shareURL" style="display: none;">
-            <input type="button" value="Dark mode" id="switchTheme">
+            <div class="dropdown">
+                <button class="dropbtn" type="button" id="themes">Themes</button>
+                <div class="dropdown-content">
+                    <div id="themesBox">
+                        <label class="container" title="Light theme">Light
+                            <input type="radio" checked="checked" name="theme-radio" value="light">
+                            <span class="checkmark"></span>
+                        </label>
+                        <label class="container" title="Dark theme">Dark
+                            <input type="radio" name="theme-radio" value="dark">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -61,7 +76,7 @@ func main() {
         <div class="panel">
             <div id="compiled" style="display: none"></div>
             <div id="live" style="display: none">
-                <iframe id="result" sandbox="allow-scripts">
+                <iframe id="result">
                     <html>
                         <head></head>
                         <body></body>
@@ -77,10 +92,25 @@ func main() {
                 </div>
             </div>
         </div>
-        <div class="sidebar">
-            <div class="sidebar-box compiled"><i data-fa-transform="down-8 right-8" class="fab fa-js-square"></i></div>
-            <div class="sidebar-box live"><i data-fa-transform="down-8 right-8" class="fas fa-eye"></i></div>
-            <div class="sidebar-box console"><i data-fa-transform="down-8 right-8" class="fas fa-terminal"></i></div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-box compiled">
+                <span class="fa-layers fa-fw fa-2x">
+                    <i class="fab fa-js-square"></i>
+                    <span class="fa-layers-counter" style="background:Tomato; display: none;"></span>
+                </span>
+            </div>
+            <div class="sidebar-box live">
+                <span class="fa-layers fa-fw fa-2x">
+                    <i class="fas fa-eye"></i>
+                    <span class="fa-layers-counter" style="background:Tomato; display: none;"></span>
+                </span>
+            </div>
+            <div class="sidebar-box console">
+                <span class="fa-layers fa-fw fa-2x">
+                    <i class="fas fa-terminal"></i>
+                    <span class="fa-layers-counter" style="background:Tomato; display: none;"></span>
+                </span>
+            </div>
         </div>
     </div>
 
@@ -93,6 +123,7 @@ func main() {
     <script src="/go.js"></script>
     <script src="/javascript.js"></script>
 
+    <script src="/js.cookie.js"></script>
     <script>
         API = "https://api.joyplayground.tryy3.us/api"
 
@@ -111,21 +142,24 @@ func main() {
         new Editor({
             code: code,
             output: compiled,
-            api: api,
+            api: API,
             panels: [
-                {
+                new Panel({
                     name: "compiled",
                     tooltip: {placement: 'left', trigger: 'hover', title: 'compiled code'},
-                    editor: compiled
-                },
-                {
+                    editor: compiled,
+                    element: document.getElementById("compiled"),
+                }),
+                new Panel({
                     name: "live",
                     tooltip: {placement: 'left', trigger: 'hover', title: 'live-preview'},
-                },
-                {
+                    element: document.getElementById("live"),
+                }),
+                new Panel({
                     name: "console",
                     tooltip: {placement: 'left', trigger: 'hover', title: 'console'},
-                },
+                    element: document.getElementById("console"),
+                }),
             ]
         })
     </script>

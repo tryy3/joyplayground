@@ -22,7 +22,7 @@ import (
 
 // shareHandler handles all of the requests when sharing golang code
 func shareHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	id, err := storeSnippet([]byte(r.Body))
+	id, err := storeSnippet("", []byte(r.Body))
 	if err != nil {
 		log.Printf("couldn't store snippet: %v", err)
 		return errorResponse("Internal error", 500), nil
@@ -42,7 +42,7 @@ func pHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, 
 	}
 
 	// Support for multiple snippet systems
-	if snippet, err := getSnippetFromS3Store(id); err == nil { // Check if we have the snippet on s3 first.
+	if snippet, err := getSnippetFromS3Store("", id); err == nil { // Check if we have the snippet on s3 first.
 		return successResponse(snippet), nil
 	} else if snippet, err = getSnippetFromLocalStore(id); err == nil { // Check if we have the snippet locally.
 		return successResponse(snippet), nil
@@ -55,7 +55,7 @@ func pHandler(r events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, 
 
 // storeSnippet stores snippet in s3.
 // It returns the id assigned to the snippet.
-func storeSnippet(body []byte) (id string, err error) {
+func storeSnippet(key string, body []byte) (id string, err error) {
 	id = snippetBodyToID(body)
 
 	sess := session.Must(session.NewSession())
@@ -67,7 +67,7 @@ func storeSnippet(body []byte) (id string, err error) {
 	// Upload input parameters
 	upParams := &s3manager.UploadInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET")),
-		Key:    aws.String(id),
+		Key:    aws.String(key + id),
 		Body:   bytes.NewReader(body),
 	}
 
@@ -109,12 +109,12 @@ func validateID(id string) error {
 }
 
 // getSnippetFromS3Store tries to get the snippet with given id from s3 bucket.
-func getSnippetFromS3Store(id string) (string, error) {
+func getSnippetFromS3Store(key, id string) (string, error) {
 	sess := session.Must(session.NewSession())
 	svc := s3.New(sess)
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET")),
-		Key:    aws.String(id),
+		Key:    aws.String(key + id),
 	}
 
 	result, err := svc.GetObject(input)
